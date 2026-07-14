@@ -1,29 +1,45 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { Button } from '../components/ui/button'
-import { Heart, UploadCloud, Loader2 } from 'lucide-react'
+import { Heart, MessageCircle, Send, Bookmark, X, UploadCloud, Loader2 } from 'lucide-react'
 
-export default function Feed() {
+// Mock Data for Stories & Suggestions
+const MOCK_STORIES = [
+  { id: 1, username: 'natasyacptr', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
+  { id: 2, username: 'ibra17al.t', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop' },
+  { id: 3, username: 'realst4r_s', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop' },
+  { id: 4, username: 'linzzkunn', avatar: 'https://images.unsplash.com/photo-1527983359383-4758693f760c?w=100&h=100&fit=crop' },
+  { id: 5, username: '4linns_', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop' }
+]
+
+const MOCK_SUGGESTIONS = [
+  { id: 1, username: 'alld', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop', desc: 'Diikuti oleh apinxyz + 1 lainnya' },
+  { id: 2, username: 'Aisyah', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop', desc: 'Diikuti oleh npssazh + 9 lainnya' },
+  { id: 3, username: 'SAMUDRA', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop', desc: 'Diikuti oleh giow_17 + 21 lainnya' }
+]
+
+export default function Feed({ user }) {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState(null)
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+
+  const isModalOpen = searchParams.get('create') === 'true' && !!user
   
   // Upload State
   const [uploading, setUploading] = useState(false)
   const [caption, setCaption] = useState('')
   const [file, setFile] = useState(null)
+  const [dragActive, setDragActive] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-    })
     fetchPosts()
   }, [])
 
   async function fetchPosts() {
     try {
       setLoading(true)
-      // Fetch posts with author profile and likes count
       const { data, error } = await supabase
         .from('posts')
         .select(`
@@ -31,7 +47,7 @@ export default function Feed() {
           image_url,
           caption,
           created_at,
-          profiles (username),
+          profiles!posts_user_id_fkey (username),
           likes (user_id)
         `)
         .order('created_at', { ascending: false })
@@ -52,21 +68,18 @@ export default function Feed() {
     try {
       setUploading(true)
       
-      // 1. Upload to Storage
       const fileExt = file.name.split('.').pop()
       const fileName = `${Math.random()}.${fileExt}`
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('uploads')
         .upload(fileName, file)
 
       if (uploadError) throw uploadError
 
-      // 2. Get Public URL
       const { data: urlData } = supabase.storage
         .from('uploads')
         .getPublicUrl(fileName)
 
-      // 3. Insert Post
       const { error: dbError } = await supabase
         .from('posts')
         .insert({
@@ -79,7 +92,8 @@ export default function Feed() {
 
       setFile(null)
       setCaption('')
-      fetchPosts() // Refresh
+      closeModal()
+      fetchPosts()
     } catch (error) {
       alert(error.message)
     } finally {
@@ -102,95 +116,161 @@ export default function Feed() {
     }
   }
 
-  return (
-    <div className="space-y-8 pb-10">
-      {/* Upload Form - Only if logged in */}
-      {user && (
-        <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <h2 className="text-lg font-semibold mb-4">Buat Postingan Baru</h2>
-          <form onSubmit={handleUpload} className="space-y-4">
-            <div>
-              <input
-                type="file"
-                accept="image/jpeg,image/png"
-                onChange={(e) => setFile(e.target.files[0])}
-                className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100 border p-2 rounded-md"
-                required
-              />
-            </div>
-            <div>
-              <textarea
-                value={caption}
-                onChange={(e) => setCaption(e.target.value)}
-                placeholder="Apa caption untuk foto ini?"
-                className="w-full border rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-slate-950"
-                rows="2"
-              />
-            </div>
-            <Button type="submit" disabled={uploading || !file}>
-              {uploading ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Mengunggah...</>
-              ) : (
-                <><UploadCloud className="w-4 h-4 mr-2" /> Posting</>
-              )}
-            </Button>
-          </form>
-        </div>
-      )}
+  function closeModal() {
+    navigate('/')
+  }
 
-      {/* Feed List */}
-      <div className="space-y-6">
+  return (
+    <div className="w-full max-w-[935px] flex space-x-12 justify-center">
+      {/* Feed Area */}
+      <div className="flex-1 max-w-[630px] space-y-6">
+        
+        {/* Stories Bar */}
+        <div className="border border-ig-border bg-ig-card rounded-lg p-4 flex space-x-4 overflow-x-auto scrollbar-none">
+          {MOCK_STORIES.map(story => (
+            <div key={story.id} className="flex flex-col items-center space-y-1.5 flex-shrink-0 cursor-pointer">
+              <div className="w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-600">
+                <img src={story.avatar} alt={story.username} className="w-full h-full rounded-full object-cover border-2 border-black" />
+              </div>
+              <span className="text-[11px] text-ig-muted truncate w-14 text-center">
+                {story.username}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Feed Posts */}
         {loading ? (
-          <div className="text-center py-10">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto text-slate-400" />
-            <p className="text-slate-500 mt-2">Memuat postingan...</p>
+          <div className="text-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto text-zinc-600" />
+            <p className="text-ig-muted text-sm mt-3">Memuat feed...</p>
           </div>
         ) : posts.length === 0 ? (
-          <div className="text-center py-10 bg-white border rounded-xl shadow-sm">
-            <p className="text-slate-500">Belum ada postingan. Jadilah yang pertama!</p>
+          <div className="text-center py-20 border border-ig-border rounded-lg bg-ig-card">
+            <p className="text-ig-muted">Belum ada kiriman dari komunitas.</p>
           </div>
         ) : (
-          posts.map(post => {
-            const hasLiked = user && post.likes.some(like => like.user_id === user.id)
-            const likeCount = post.likes.length
+          <div className="space-y-6">
+            {posts.map(post => {
+              const hasLiked = user && post.likes?.some(like => like.user_id === user.id)
+              const likeCount = post.likes ? post.likes.length : 0
+              const username = post.profiles?.username || 'user'
+              const formattedDate = new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 
-            return (
-              <div key={post.id} className="bg-white border rounded-xl shadow-sm overflow-hidden">
-                <div className="p-4 border-b bg-slate-50/50">
-                  <p className="font-semibold text-slate-800">
-                    @{post.profiles?.username || 'unknown'}
-                  </p>
-                </div>
-                
-                <img src={post.image_url} alt={post.caption} className="w-full h-auto object-cover max-h-[600px]" />
-                
-                <div className="p-4 space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={() => toggleLike(post.id, hasLiked)}
-                      className="transition-transform active:scale-95"
-                    >
-                      <Heart className={`w-6 h-6 ${hasLiked ? 'fill-red-500 text-red-500' : 'text-slate-600'}`} />
-                    </button>
-                    <span className="text-sm font-medium text-slate-700">{likeCount} Suka</span>
+              return (
+                <article key={post.id} className="border border-ig-border bg-ig-card rounded-lg overflow-hidden">
+                  {/* Post Header */}
+                  <div className="p-3.5 flex justify-between items-center border-b border-ig-border">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-xs">
+                        {username[0].toUpperCase()}
+                      </div>
+                      <span className="text-sm font-semibold hover:text-zinc-300 cursor-pointer">
+                        {username}
+                      </span>
+                    </div>
                   </div>
-                  
-                  {post.caption && (
-                    <p className="text-sm text-slate-800">
-                      <span className="font-semibold mr-2">{post.profiles?.username || 'unknown'}</span>
-                      {post.caption}
-                    </p>
-                  )}
-                  
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">
-                    {new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </p>
-                </div>
-              </div>
-            )
-          })
+
+                  {/* Post Image */}
+                  <div className="w-full bg-black aspect-square flex items-center justify-center overflow-hidden">
+                    <img src={post.image_url} alt={post.caption || 'Foto'} className="w-full h-full object-cover" />
+                  </div>
+
+                  {/* Action Bar */}
+                  <div className="p-3.5 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-4">
+                        <button 
+                          onClick={() => toggleLike(post.id, hasLiked)}
+                          className="hover:text-zinc-400 active:scale-90 transition-transform cursor-pointer text-ig-text"
+                        >
+                          <Heart className={`w-6 h-6 ${hasLiked ? 'fill-ig-heart text-ig-heart' : 'text-ig-text'}`} />
+                        </button>
+                        <MessageCircle className="w-6 h-6 hover:text-zinc-400 cursor-pointer text-ig-text" />
+                        <Send className="w-6 h-6 hover:text-zinc-400 cursor-pointer text-ig-text" />
+                      </div>
+                      <Bookmark className="w-6 h-6 hover:text-zinc-400 cursor-pointer text-ig-text" />
+                    </div>
+
+                    <div className="text-sm font-semibold">
+                      {likeCount} Suka
+                    </div>
+
+                    {post.caption && (
+                      <div className="text-sm leading-relaxed">
+                        <span className="font-semibold mr-2">{username}</span>
+                        {post.caption}
+                      </div>
+                    )}
+
+                    <div className="text-[10px] text-ig-muted uppercase tracking-wider">
+                      {formattedDate}
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
         )}
       </div>
+
+      {/* Right Suggestions Sidebar */}
+      <div className="w-[320px] lg:block hidden space-y-6 pt-4 text-white">
+        {/* Current user info */}
+        {user && (
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <div className="w-11 h-11 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-sm">
+                {user.email[0].toUpperCase()}
+              </div>
+              <div>
+                <p className="text-sm font-semibold">@{user.email.split('@')[0]}</p>
+                <p className="text-xs text-ig-muted">Pengguna Aktif</p>
+              </div>
+            </div>
+            <button className="text-xs font-bold text-ig-blue hover:text-white cursor-pointer">Alihkan</button>
+          </div>
+        )}
+
+        {/* Suggestions list */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-ig-muted">Saran Untuk Anda</span>
+            <button className="text-xs font-bold text-ig-text hover:text-ig-muted cursor-pointer">Lihat Semua</button>
+          </div>
+          
+          <div className="space-y-3.5">
+            {MOCK_SUGGESTIONS.map(sug => (
+              <div key={sug.id} className="flex justify-between items-center">
+                <div className="flex items-center space-x-3">
+                  <img src={sug.avatar} alt={sug.username} className="w-8 h-8 rounded-full object-cover" />
+                  <div>
+                    <p className="text-sm font-semibold">{sug.username}</p>
+                    <p className="text-[10px] text-ig-muted truncate w-40">{sug.desc}</p>
+                  </div>
+                </div>
+                <button className="text-xs font-bold text-ig-blue hover:text-white cursor-pointer">Ikuti</button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer Meta */}
+        <div className="text-[11px] text-ig-muted leading-loose">
+          Tentang · Bantuan · Pers · API · Pekerjaan · Privasi · Ketentuan · Lokasi
+          <p className="mt-4">© 2026 COMMUNITY BOARD FROM META</p>
+        </div>
+      </div>
+
+      {/* Upload Modal (Scaffolded) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-ig-card border border-ig-border rounded-xl w-full max-w-lg p-6 relative">
+            <h2 className="text-lg font-bold">Unggah Foto Baru</h2>
+            <button onClick={closeModal} className="absolute top-4 right-4 text-ig-muted hover:text-white"><X /></button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
