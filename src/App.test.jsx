@@ -30,6 +30,6 @@ describe('App Sidebar Navigation', () => {
     )
     expect(await screen.findByText(/Beranda/i)).toBeInTheDocument()
     expect(screen.getByText(/Pesan/i)).toBeInTheDocument()
-    expect(screen.getByText(/Buat/i)).toBeInTheDocument()
+    expect(screen.getByText('Buat', { selector: 'span' })).toBeInTheDocument()
   })
 })
