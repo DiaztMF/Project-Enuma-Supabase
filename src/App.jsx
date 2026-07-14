@@ -3,7 +3,12 @@ import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import Login from './pages/Login'
 import Feed from './pages/Feed'
-import { Home, Search, Compass, MessageCircle, Heart, PlusSquare, User, LogOut } from 'lucide-react'
+import Search from './pages/Search'
+import Explore from './pages/Explore'
+import Messages from './pages/Messages'
+import Notifications from './pages/Notifications'
+import Profile from './pages/Profile'
+import { Home, Search as SearchIcon, Compass, MessageCircle, Heart, PlusSquare, User, LogOut } from 'lucide-react'
 
 export default function App() {
   const [user, setUser] = useState(null)
@@ -53,25 +58,25 @@ export default function App() {
               <span className="text-sm font-medium md:inline hidden">Beranda</span>
             </Link>
             
-            <button className="w-full flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98] cursor-pointer text-left">
-              <Search className="w-6 h-6" />
+            <Link to="/search" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
+              <SearchIcon className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Cari</span>
-            </button>
+            </Link>
 
-            <button className="w-full flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98] cursor-pointer text-left">
+            <Link to="/explore" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
               <Compass className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Jelajahi</span>
-            </button>
+            </Link>
 
-            <button className="w-full flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98] cursor-pointer text-left">
+            <Link to="/messages" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
               <MessageCircle className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Pesan</span>
-            </button>
+            </Link>
 
-            <button className="w-full flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98] cursor-pointer text-left">
+            <Link to="/notifications" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
               <Heart className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Notifikasi</span>
-            </button>
+            </Link>
 
             {user ? (
               <Link to="/?create=true" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
@@ -86,10 +91,10 @@ export default function App() {
             )}
 
             {user && (
-              <div className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors">
+              <Link to={`/profile/${username}`} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
                 <User className="w-6 h-6" />
                 <span className="text-sm font-medium md:inline hidden truncate">@{username}</span>
-              </div>
+              </Link>
             )}
           </nav>
         </div>
@@ -114,10 +119,15 @@ export default function App() {
       </aside>
 
       {/* Main Container Workspace */}
-      <main className="flex-1 min-h-screen ml-16 md:ml-60 flex justify-center p-4 md:p-8">
+      <main className="flex-1 min-h-screen ml-16 md:ml-60 flex justify-center p-4 md:p-8 overflow-hidden">
         <Routes>
           <Route path="/" element={<Feed user={user} />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/messages" element={<Messages user={user} />} />
+          <Route path="/notifications" element={<Notifications user={user} />} />
+          <Route path="/profile/:username" element={<Profile user={user} />} />
         </Routes>
       </main>
     </div>

@@ -21,15 +21,14 @@ vi.mock('./supabaseClient', () => ({
   }
 }))
 
-describe('App Sidebar Navigation', () => {
-  test('renders sidebar navigation items', async () => {
+describe('App Routing', () => {
+  test('renders navigation links pointing to routes', async () => {
     render(
       <MemoryRouter>
         <App />
       </MemoryRouter>
     )
     expect(await screen.findByText(/Beranda/i)).toBeInTheDocument()
-    expect(screen.getByText(/Pesan/i)).toBeInTheDocument()
-    expect(screen.getByText('Buat', { selector: 'span' })).toBeInTheDocument()
+    expect(screen.getByText(/Jelajahi/i).closest('a')).toHaveAttribute('href', '/explore')
   })
 })
