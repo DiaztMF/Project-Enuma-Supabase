@@ -15,7 +15,10 @@ vi.mock('../supabaseClient', () => ({
               caption: 'Foto Test 1',
               created_at: new Date().toISOString(),
               profiles: { username: 'testuser1' },
-              likes: []
+              likes: [],
+              comments: [
+                { id: 'c-1', text: 'Komentar Mock 1', profiles: { username: 'testuser2' } }
+              ]
             },
             {
               id: 'post-2',
@@ -23,12 +26,14 @@ vi.mock('../supabaseClient', () => ({
               caption: 'Foto Test 2',
               created_at: new Date().toISOString(),
               profiles: { username: 'testuser2' },
-              likes: []
+              likes: [],
+              comments: []
             }
           ], 
           error: null 
         })
-      }))
+      })),
+      insert: vi.fn().mockResolvedValue({ error: null })
     }))
   }
 }))
@@ -82,6 +87,9 @@ describe('Interactive Post Card Features', () => {
       </MemoryRouter>
     )
     
+    // Check initial mock comment
+    expect(await screen.findByText(/Komentar Mock 1/i)).toBeInTheDocument()
+
     // Type in comment input
     const commentInputs = await screen.findAllByPlaceholderText(/Tambahkan komentar.../i)
     fireEvent.change(commentInputs[0], { target: { value: 'Komentar test baru' } })
@@ -90,8 +98,10 @@ describe('Interactive Post Card Features', () => {
     const submitButtons = screen.getAllByRole('button', { name: /Kirim/i })
     fireEvent.click(submitButtons[0])
     
-    // Check if comment is rendered
-    expect(await screen.findByText(/Komentar test baru/i)).toBeInTheDocument()
+    // Wait for the input to be cleared (since insert is async)
+    await waitFor(() => {
+      expect(commentInputs[0].value).toBe('')
+    })
   })
 
   test('double clicking image displays heart pop up', async () => {
@@ -109,7 +119,6 @@ describe('Interactive Post Card Features', () => {
   })
 
   test('clicking share icon copies link and displays toast', async () => {
-    // Mock navigator.clipboard.writeText
     const mockWriteText = vi.fn().mockResolvedValue(undefined)
     Object.assign(navigator, {
       clipboard: {

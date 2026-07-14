@@ -11,23 +11,6 @@ const MOCK_SUGGESTIONS = [
   { id: 3, username: 'SAMUDRA', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop', desc: 'Diikuti oleh giow_17 + 21 lainnya' }
 ]
 
-const INITIAL_MOCK_COMMENTS = {
-  'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b001': [
-    { id: 1, username: 'luna_shadow', text: 'Keren banget auroranya! 🌌' },
-    { id: 2, username: 'kai_creative', text: 'Komposisi warnanya luar biasa.' }
-  ],
-  'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b002': [
-    { id: 1, username: 'zen_captures', text: 'Sangat menyukai eksperimen warna ini! 🎨' }
-  ],
-  'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b003': [
-    { id: 1, username: 'wander_dream', text: 'Pemandangannya memukau sekali!' }
-  ],
-  'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b004': [
-    { id: 1, username: 'aurora_sky', text: 'Tokyo malam memang magis 🗼' },
-    { id: 2, username: 'zen_captures', text: 'Nice shot! Warnanya tajam.' }
-  ]
-}
-
 export default function Feed({ user }) {
   const [posts, setPosts] = useState([])
   const [stories, setStories] = useState([])
@@ -48,7 +31,6 @@ export default function Feed({ user }) {
   const [progress, setProgress] = useState(0)
 
   // Comments State
-  const [comments, setComments] = useState(INITIAL_MOCK_COMMENTS)
   const [commentInputs, setCommentInputs] = useState({})
   const [expandedComments, setExpandedComments] = useState({})
 
@@ -100,7 +82,12 @@ export default function Feed({ user }) {
           caption,
           created_at,
           profiles!posts_user_id_fkey (username),
-          likes (user_id)
+          likes (user_id),
+          comments (
+            id,
+            text,
+            profiles (username)
+          )
         `)
         .order('created_at', { ascending: false })
 
@@ -241,34 +228,39 @@ export default function Feed({ user }) {
     setExpandedComments(prev => ({ ...prev, [postId]: !prev[postId] }))
   }
 
-  const getPostComments = (postId) => {
-    return comments[postId] || []
+  const getPostComments = (post) => {
+    return post.comments || []
   }
 
-  const renderComments = (postId) => {
-    const postComments = getPostComments(postId)
-    if (expandedComments[postId]) {
+  const renderComments = (post) => {
+    const postComments = getPostComments(post)
+    if (expandedComments[post.id]) {
       return postComments
     }
     return postComments.slice(-2) // Show last 2 comments
   }
 
-  const handleAddComment = (postId) => {
+  const handleAddComment = async (postId) => {
+    if (!user) return alert("Silakan login untuk memberikan komentar.")
     const text = commentInputs[postId] || ''
     if (!text.trim()) return
 
-    const newComment = {
-      id: Date.now(),
-      username: user?.email?.split('@')[0] || 'kamu',
-      text: text
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .insert({
+          post_id: postId,
+          user_id: user.id,
+          text: text
+        })
+      
+      if (error) throw error
+
+      setCommentInputs(prev => ({ ...prev, [postId]: '' }))
+      fetchPosts()
+    } catch (error) {
+      console.error('Error adding comment:', error.message)
     }
-
-    setComments(prev => ({
-      ...prev,
-      [postId]: [...(prev[postId] || []), newComment]
-    }))
-
-    setCommentInputs(prev => ({ ...prev, [postId]: '' }))
   }
 
   return (
@@ -386,22 +378,25 @@ export default function Feed({ user }) {
                     {/* Comments List */}
                     <div className="space-y-1 mt-2 pt-2 border-t border-ig-border/30">
                       {/* View all comments toggle */}
-                      {getPostComments(post.id).length > 2 && !expandedComments[post.id] && (
+                      {getPostComments(post).length > 2 && !expandedComments[post.id] && (
                         <button 
                           onClick={() => toggleExpandComments(post.id)}
                           className="text-xs text-ig-muted hover:text-ig-text font-medium cursor-pointer"
                         >
-                          Lihat semua {getPostComments(post.id).length} komentar
+                          Lihat semua {getPostComments(post).length} komentar
                         </button>
                       )}
                       
                       <div className="space-y-1">
-                        {renderComments(post.id).map(cmt => (
-                          <div key={cmt.id} className="text-xs">
-                            <span className="font-semibold mr-1.5">{cmt.username}</span>
-                            <span>{cmt.text}</span>
-                          </div>
-                        ))}
+                        {renderComments(post).map(cmt => {
+                          const commenterName = cmt.profiles?.username || 'user'
+                          return (
+                            <div key={cmt.id} className="text-xs">
+                              <span className="font-semibold mr-1.5">{commenterName}</span>
+                              <span>{cmt.text}</span>
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
 
