@@ -4,11 +4,11 @@ import { supabase } from '../supabaseClient'
 import { Button } from '../components/ui/button'
 import { Heart, MessageCircle, Send, Bookmark, X, UploadCloud, Loader2 } from 'lucide-react'
 
-// Mock Data for Suggestions (kept as mock or can be fallback)
-const MOCK_SUGGESTIONS = [
-  { id: 1, username: 'alld', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop', desc: 'Diikuti oleh apinxyz + 1 lainnya' },
-  { id: 2, username: 'Aisyah', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop', desc: 'Diikuti oleh npssazh + 9 lainnya' },
-  { id: 3, username: 'SAMUDRA', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop', desc: 'Diikuti oleh giow_17 + 21 lainnya' }
+// Mock Suggestions as fallback if user is not logged in
+const FALLBACK_SUGGESTIONS = [
+  { id: 'f1', username: 'alld', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop', desc: 'Diikuti oleh apinxyz + 1 lainnya' },
+  { id: 'f2', username: 'Aisyah', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop', desc: 'Diikuti oleh npssazh + 9 lainnya' },
+  { id: 'f3', username: 'SAMUDRA', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop', desc: 'Diikuti oleh giow_17 + 21 lainnya' }
 ]
 
 export default function Feed({ user }) {
@@ -43,9 +43,14 @@ export default function Feed({ user }) {
   // Bookmarks State
   const [savedPostIds, setSavedPostIds] = useState([])
 
+  // Suggestions & Follows Database State
+  const [followingIds, setFollowingIds] = useState([])
+  const [suggestions, setSuggestions] = useState([])
+
   useEffect(() => {
     fetchPosts()
-  }, [])
+    fetchSuggestionsAndFollows()
+  }, [user])
 
   // Timer Effect for Stories Progress
   useEffect(() => {
@@ -117,6 +122,76 @@ export default function Feed({ user }) {
       console.error('Error fetching posts:', error.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function fetchSuggestionsAndFollows() {
+    if (!user) {
+      setSuggestions(FALLBACK_SUGGESTIONS)
+      return
+    }
+
+    try {
+      // 1. Fetch current follows
+      const { data: followData, error: followError } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', user.id)
+
+      if (followError) throw followError
+      const followedIds = followData?.map(f => f.following_id) || []
+      setFollowingIds(followedIds)
+
+      // 2. Fetch other user profiles
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .neq('id', user.id)
+
+      if (profileError) throw profileError
+
+      // Filter profile suggestions (only profiles the user is not following yet)
+      const filtered = profileData?.filter(p => !followedIds.includes(p.id)) || []
+      const mapped = filtered.map(p => ({
+        id: p.id,
+        username: p.username,
+        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${p.username}`,
+        desc: 'Saran untuk Anda'
+      })).slice(0, 5)
+
+      setSuggestions(mapped)
+    } catch (error) {
+      console.error('Error fetching suggestions & follows:', error.message)
+    }
+  }
+
+  async function toggleFollow(targetUserId) {
+    if (!user) return alert("Silakan login untuk mengikuti pengguna.")
+
+    const isFollowing = followingIds.includes(targetUserId)
+
+    try {
+      if (isFollowing) {
+        // Unfollow
+        const { error } = await supabase
+          .from('follows')
+          .delete()
+          .match({ follower_id: user.id, following_id: targetUserId })
+        
+        if (error) throw error
+      } else {
+        // Follow
+        const { error } = await supabase
+          .from('follows')
+          .insert({ follower_id: user.id, following_id: targetUserId })
+        
+        if (error) throw error
+      }
+
+      // Re-fetch follows and suggestions
+      fetchSuggestionsAndFollows()
+    } catch (error) {
+      console.error('Error toggling follow:', error.message)
     }
   }
 
@@ -463,18 +538,29 @@ export default function Feed({ user }) {
           </div>
           
           <div className="space-y-3.5">
-            {MOCK_SUGGESTIONS.map(sug => (
-              <div key={sug.id} className="flex justify-between items-center">
-                <div className="flex items-center space-x-3">
-                  <img src={sug.avatar} alt={sug.username} className="w-8 h-8 rounded-full object-cover" />
-                  <div>
-                    <p className="text-sm font-semibold">{sug.username}</p>
-                    <p className="text-[10px] text-ig-muted truncate w-40">{sug.desc}</p>
+            {suggestions.map(sug => {
+              const isFollowing = followingIds.includes(sug.id)
+              return (
+                <div key={sug.id} className="flex justify-between items-center">
+                  <div className="flex items-center space-x-3">
+                    <img src={sug.avatar} alt={sug.username} className="w-8 h-8 rounded-full object-cover border border-ig-border" />
+                    <div>
+                      <p className="text-sm font-semibold">@{sug.username}</p>
+                      <p className="text-[10px] text-ig-muted truncate w-40">{sug.desc}</p>
+                    </div>
                   </div>
+                  <button 
+                    onClick={() => toggleFollow(sug.id)}
+                    className={`text-xs font-bold hover:text-ig-text cursor-pointer ${isFollowing ? 'text-zinc-400' : 'text-ig-blue'}`}
+                  >
+                    {isFollowing ? 'Mengikuti' : 'Ikuti'}
+                  </button>
                 </div>
-                <button className="text-xs font-bold text-ig-blue hover:text-ig-text cursor-pointer">Ikuti</button>
-              </div>
-            ))}
+              )
+            })}
+            {suggestions.length === 0 && (
+              <p className="text-xs text-ig-muted">Tidak ada saran baru untuk Anda.</p>
+            )}
           </div>
         </div>
 

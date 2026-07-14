@@ -3,40 +3,79 @@ import { describe, test, expect, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
 import Feed from './Feed'
 
-vi.mock('../supabaseClient', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        order: vi.fn().mockResolvedValue({ 
-          data: [
-            {
-              id: 'post-1',
-              image_url: 'https://example.com/img.jpg',
-              caption: 'Foto Test 1',
-              created_at: new Date().toISOString(),
-              profiles: { username: 'testuser1' },
-              likes: [],
-              comments: [
-                { id: 'c-1', text: 'Komentar Mock 1', profiles: { username: 'testuser2' } }
-              ]
-            },
-            {
-              id: 'post-2',
-              image_url: 'https://example.com/img2.jpg',
-              caption: 'Foto Test 2',
-              created_at: new Date().toISOString(),
-              profiles: { username: 'testuser2' },
-              likes: [],
-              comments: []
-            }
-          ], 
-          error: null 
-        })
-      })),
-      insert: vi.fn().mockResolvedValue({ error: null })
-    }))
+vi.mock('../supabaseClient', () => {
+  const mockPostData = [
+    {
+      id: 'post-1',
+      image_url: 'https://example.com/img.jpg',
+      caption: 'Foto Test 1',
+      created_at: new Date().toISOString(),
+      profiles: { username: 'testuser1' },
+      likes: [],
+      comments: [
+        { id: 'c-1', text: 'Komentar Mock 1', profiles: { username: 'testuser2' } }
+      ]
+    },
+    {
+      id: 'post-2',
+      image_url: 'https://example.com/img2.jpg',
+      caption: 'Foto Test 2',
+      created_at: new Date().toISOString(),
+      profiles: { username: 'testuser2' },
+      likes: [],
+      comments: []
+    }
+  ];
+
+  const mockProfileData = [
+    { id: 'a1', username: 'testuser1' },
+    { id: 'a2', username: 'testuser2' },
+    { id: 'a3', username: 'testuser3' }
+  ];
+
+  const mockFollowData = [
+    { following_id: 'a1' }
+  ];
+
+  return {
+    supabase: {
+      from: vi.fn((table) => {
+        if (table === 'posts') {
+          return {
+            select: vi.fn(() => ({
+              order: vi.fn().mockResolvedValue({ data: mockPostData, error: null })
+            }))
+          }
+        }
+        if (table === 'profiles') {
+          return {
+            select: vi.fn(() => ({
+              neq: vi.fn().mockResolvedValue({ data: mockProfileData, error: null })
+            }))
+          }
+        }
+        if (table === 'follows') {
+          return {
+            select: vi.fn(() => ({
+              eq: vi.fn().mockResolvedValue({ data: mockFollowData, error: null })
+            })),
+            insert: vi.fn().mockResolvedValue({ error: null }),
+            delete: vi.fn().mockReturnValue({
+              match: vi.fn().mockResolvedValue({ error: null })
+            })
+          }
+        }
+        // Fallback for likes / comments
+        return {
+          insert: vi.fn().mockResolvedValue({ error: null }),
+          delete: vi.fn().mockReturnValue({
+            match: vi.fn().mockResolvedValue({ error: null })
+          })
+        }
+      })
+    }
   }
-}))
+})
 
 describe('Feed Page Stories and Suggestions', () => {
   test('renders stories bar and suggestions list', async () => {
