@@ -11,6 +11,23 @@ const MOCK_SUGGESTIONS = [
   { id: 3, username: 'SAMUDRA', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop', desc: 'Diikuti oleh giow_17 + 21 lainnya' }
 ]
 
+const INITIAL_MOCK_COMMENTS = {
+  'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b001': [
+    { id: 1, username: 'luna_shadow', text: 'Keren banget auroranya! 🌌' },
+    { id: 2, username: 'kai_creative', text: 'Komposisi warnanya luar biasa.' }
+  ],
+  'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b002': [
+    { id: 1, username: 'zen_captures', text: 'Sangat menyukai eksperimen warna ini! 🎨' }
+  ],
+  'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b003': [
+    { id: 1, username: 'wander_dream', text: 'Pemandangannya memukau sekali!' }
+  ],
+  'b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b004': [
+    { id: 1, username: 'aurora_sky', text: 'Tokyo malam memang magis 🗼' },
+    { id: 2, username: 'zen_captures', text: 'Nice shot! Warnanya tajam.' }
+  ]
+}
+
 export default function Feed({ user }) {
   const [posts, setPosts] = useState([])
   const [stories, setStories] = useState([])
@@ -29,6 +46,20 @@ export default function Feed({ user }) {
   // Story Viewer State
   const [activeStoryIndex, setActiveStoryIndex] = useState(null)
   const [progress, setProgress] = useState(0)
+
+  // Comments State
+  const [comments, setComments] = useState(INITIAL_MOCK_COMMENTS)
+  const [commentInputs, setCommentInputs] = useState({})
+  const [expandedComments, setExpandedComments] = useState({})
+
+  // Double Click Animation State
+  const [animateHeartPostId, setAnimateHeartPostId] = useState(null)
+
+  // Share Toast State
+  const [shareToastText, setShareToastText] = useState('')
+
+  // Bookmarks State
+  const [savedPostIds, setSavedPostIds] = useState([])
 
   useEffect(() => {
     fetchPosts()
@@ -180,6 +211,66 @@ export default function Feed({ user }) {
     navigate('/')
   }
 
+  // Interactive functions
+  const handleDoubleClick = (postId, hasLiked) => {
+    setAnimateHeartPostId(postId)
+    setTimeout(() => setAnimateHeartPostId(null), 800)
+    if (!hasLiked) {
+      toggleLike(postId, false)
+    }
+  }
+
+  const focusCommentInput = (postId) => {
+    document.getElementById(`comment-input-${postId}`)?.focus()
+  }
+
+  const handleShare = (postId) => {
+    const url = `${window.location.origin}/post/${postId}`
+    navigator.clipboard.writeText(url)
+    setShareToastText('Tautan disalin ke papan klip!')
+    setTimeout(() => setShareToastText(''), 2000)
+  }
+
+  const toggleBookmark = (postId) => {
+    setSavedPostIds(prev => 
+      prev.includes(postId) ? prev.filter(id => id !== postId) : [...prev, postId]
+    )
+  }
+
+  const toggleExpandComments = (postId) => {
+    setExpandedComments(prev => ({ ...prev, [postId]: !prev[postId] }))
+  }
+
+  const getPostComments = (postId) => {
+    return comments[postId] || []
+  }
+
+  const renderComments = (postId) => {
+    const postComments = getPostComments(postId)
+    if (expandedComments[postId]) {
+      return postComments
+    }
+    return postComments.slice(-2) // Show last 2 comments
+  }
+
+  const handleAddComment = (postId) => {
+    const text = commentInputs[postId] || ''
+    if (!text.trim()) return
+
+    const newComment = {
+      id: Date.now(),
+      username: user?.email?.split('@')[0] || 'kamu',
+      text: text
+    }
+
+    setComments(prev => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), newComment]
+    }))
+
+    setCommentInputs(prev => ({ ...prev, [postId]: '' }))
+  }
+
   return (
     <div className="w-full max-w-[935px] flex space-x-12 justify-center">
       {/* Feed Area */}
@@ -235,9 +326,17 @@ export default function Feed({ user }) {
                     </div>
                   </div>
 
-                  {/* Post Image */}
-                  <div className="w-full bg-zinc-50 aspect-square flex items-center justify-center overflow-hidden">
+                  {/* Post Image (with double click to like) */}
+                  <div 
+                    onDoubleClick={() => handleDoubleClick(post.id, hasLiked)}
+                    className="w-full bg-zinc-50 aspect-square flex items-center justify-center overflow-hidden relative cursor-pointer select-none"
+                  >
                     <img src={post.image_url} alt={post.caption || 'Foto'} className="w-full h-full object-cover" />
+                    {animateHeartPostId === post.id && (
+                      <div data-testid="animated-heart" className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 bg-black/10">
+                        <Heart className="w-20 h-20 text-white fill-white animate-ping" />
+                      </div>
+                    )}
                   </div>
 
                   {/* Action Bar */}
@@ -250,10 +349,27 @@ export default function Feed({ user }) {
                         >
                           <Heart className={`w-6 h-6 ${hasLiked ? 'fill-ig-heart text-ig-heart' : 'text-ig-text'}`} />
                         </button>
-                        <MessageCircle className="w-6 h-6 hover:text-zinc-400 cursor-pointer text-ig-text" />
-                        <Send className="w-6 h-6 hover:text-zinc-400 cursor-pointer text-ig-text" />
+                        <button 
+                          onClick={() => focusCommentInput(post.id)}
+                          className="hover:text-zinc-400 cursor-pointer text-ig-text"
+                        >
+                          <MessageCircle className="w-6 h-6" />
+                        </button>
+                        <button 
+                          data-testid="share-btn"
+                          onClick={() => handleShare(post.id)}
+                          className="hover:text-zinc-400 cursor-pointer text-ig-text"
+                        >
+                          <Send className="w-6 h-6" />
+                        </button>
                       </div>
-                      <Bookmark className="w-6 h-6 hover:text-zinc-400 cursor-pointer text-ig-text" />
+                      <button 
+                        data-testid="bookmark-btn"
+                        onClick={() => toggleBookmark(post.id)}
+                        className="hover:text-zinc-400 cursor-pointer text-ig-text"
+                      >
+                        <Bookmark className={`w-6 h-6 ${savedPostIds.includes(post.id) ? 'fill-ig-text text-ig-text' : 'text-ig-text'}`} />
+                      </button>
                     </div>
 
                     <div className="text-sm font-semibold">
@@ -267,9 +383,57 @@ export default function Feed({ user }) {
                       </div>
                     )}
 
+                    {/* Comments List */}
+                    <div className="space-y-1 mt-2 pt-2 border-t border-ig-border/30">
+                      {/* View all comments toggle */}
+                      {getPostComments(post.id).length > 2 && !expandedComments[post.id] && (
+                        <button 
+                          onClick={() => toggleExpandComments(post.id)}
+                          className="text-xs text-ig-muted hover:text-ig-text font-medium cursor-pointer"
+                        >
+                          Lihat semua {getPostComments(post.id).length} komentar
+                        </button>
+                      )}
+                      
+                      <div className="space-y-1">
+                        {renderComments(post.id).map(cmt => (
+                          <div key={cmt.id} className="text-xs">
+                            <span className="font-semibold mr-1.5">{cmt.username}</span>
+                            <span>{cmt.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     <div className="text-[10px] text-ig-muted uppercase tracking-wider">
                       {formattedDate}
                     </div>
+
+                    {/* Add Comment Input Field */}
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        handleAddComment(post.id)
+                      }}
+                      className="flex items-center justify-between border-t border-ig-border pt-3 mt-3 text-sm text-ig-text"
+                    >
+                      <input 
+                        id={`comment-input-${post.id}`}
+                        type="text"
+                        placeholder="Tambahkan komentar..."
+                        value={commentInputs[post.id] || ''}
+                        onChange={(e) => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
+                        className="w-full bg-transparent focus:outline-none placeholder-zinc-400 text-xs pr-4"
+                      />
+                      <button 
+                        type="submit" 
+                        disabled={!(commentInputs[post.id] || '').trim()}
+                        className="text-xs font-semibold text-ig-blue hover:text-blue-600 disabled:opacity-30 cursor-pointer"
+                      >
+                        Kirim
+                      </button>
+                    </form>
+
                   </div>
                 </article>
               )
@@ -476,6 +640,13 @@ export default function Feed({ user }) {
               </svg>
             </button>
           )}
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {shareToastText && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-xs px-4 py-2.5 rounded-lg z-[110] shadow-lg transition-opacity flex items-center space-x-2">
+          <span>{shareToastText}</span>
         </div>
       )}
     </div>
