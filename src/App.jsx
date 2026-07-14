@@ -29,6 +29,29 @@ export default function App() {
     }
   }, [])
 
+  useEffect(() => {
+    const path = location.pathname
+    if (path === '/') {
+      document.title = 'Beranda • Enuma'
+    } else if (path === '/login') {
+      document.title = 'Masuk • Enuma'
+    } else if (path === '/search') {
+      document.title = 'Cari • Enuma'
+    } else if (path === '/explore') {
+      document.title = 'Jelajahi • Enuma'
+    } else if (path === '/messages') {
+      document.title = 'Pesan • Enuma'
+    } else if (path === '/notifications') {
+      document.title = 'Notifikasi • Enuma'
+    } else if (path.startsWith('/profile/')) {
+      const parts = path.split('/')
+      const profileUser = parts[parts.length - 1] || ''
+      document.title = `@${profileUser} • Enuma`
+    } else {
+      document.title = 'Enuma'
+    }
+  }, [location.pathname])
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     navigate('/login')
