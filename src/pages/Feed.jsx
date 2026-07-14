@@ -240,10 +240,10 @@ export default function Feed({ user }) {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <div className="w-11 h-11 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-sm">
-                {user.email[0].toUpperCase()}
+                {user.email?.[0]?.toUpperCase() || 'U'}
               </div>
               <div>
-                <p className="text-sm font-semibold">@{user.email.split('@')[0]}</p>
+                <p className="text-sm font-semibold">@{user.email?.split('@')[0] || 'user'}</p>
                 <p className="text-xs text-ig-muted">Pengguna Aktif</p>
               </div>
             </div>
