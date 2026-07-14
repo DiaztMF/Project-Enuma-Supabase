@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { Button } from '../components/ui/button'
 import { Heart, MessageCircle, Send, Bookmark, X, UploadCloud, Loader2 } from 'lucide-react'
+import { useToast } from '../context/ToastContext'
 
 // Mock Suggestions as fallback if user is not logged in
 const FALLBACK_SUGGESTIONS = [
@@ -12,6 +13,9 @@ const FALLBACK_SUGGESTIONS = [
 ]
 
 export default function Feed({ user }) {
+  const toastContext = useToast()
+  const toast = toastContext?.toast || (() => {})
+
   const [posts, setPosts] = useState([])
   const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -166,7 +170,7 @@ export default function Feed({ user }) {
   }
 
   async function toggleFollow(targetUserId) {
-    if (!user) return alert("Silakan login untuk mengikuti pengguna.")
+    if (!user) return toast({ title: 'Akses Ditolak', description: 'Silakan login untuk mengikuti pengguna.', variant: 'destructive' })
 
     const isFollowing = followingIds.includes(targetUserId)
 
@@ -229,14 +233,14 @@ export default function Feed({ user }) {
       closeModal()
       fetchPosts()
     } catch (error) {
-      alert(error.message)
+      toast({ title: 'Terjadi Kesalahan', description: error.message, variant: 'destructive' })
     } finally {
       setUploading(false)
     }
   }
 
   async function toggleLike(postId, hasLiked) {
-    if (!user) return alert("Silakan login untuk menyukai postingan.")
+    if (!user) return toast({ title: 'Akses Ditolak', description: 'Silakan login untuk menyukai postingan.', variant: 'destructive' })
 
     try {
       if (hasLiked) {
@@ -316,7 +320,7 @@ export default function Feed({ user }) {
   }
 
   const handleAddComment = async (postId) => {
-    if (!user) return alert("Silakan login untuk memberikan komentar.")
+    if (!user) return toast({ title: 'Akses Ditolak', description: 'Silakan login untuk memberikan komentar.', variant: 'destructive' })
     const text = commentInputs[postId] || ''
     if (!text.trim()) return
 
