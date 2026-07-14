@@ -66,13 +66,10 @@ export default function Login() {
         </div>
 
         {/* Gallery Footer Tag */}
-        <div className="z-10 flex flex-col space-y-1">
+        <div className="z-10 mt-5 flex flex-col space-y-1">
           <h2 className="text-3xl font-bold text-white tracking-tight leading-none">
             Connect with visual minds
           </h2>
-          <p className="text-xs text-zinc-500 tracking-wide font-medium">
-            © 2026 ENUMA COMMUNITY BOARD
-          </p>
         </div>
 
       </div>

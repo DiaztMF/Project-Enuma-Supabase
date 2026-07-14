@@ -43,11 +43,17 @@ export default function App() {
         <div className="space-y-8">
           {/* Logo */}
           <Link to="/" className="block py-4">
-            <h1 className="text-xl font-bold font-serif md:block hidden tracking-wide bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent">
-              Community Board
-            </h1>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-500 md:hidden flex items-center justify-center font-bold text-white text-xs">
-              CB
+            <div className="flex items-center space-x-2.5">
+              {/* Rotating Gradient Monogram Logo */}
+              <div className="relative w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 animate-[spin_10s_linear_infinite]" />
+                <div className="absolute inset-[1.5px] rounded-full bg-white flex items-center justify-center font-black text-xs text-zinc-950 shadow-[inset_0_0.5px_1px_rgba(0,0,0,0.1)]">
+                  E
+                </div>
+              </div>
+              <span className="text-base font-bold tracking-[0.15em] text-zinc-900 md:block hidden uppercase">
+                Enuma
+              </span>
             </div>
           </Link>
 
