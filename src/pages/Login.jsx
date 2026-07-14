@@ -21,13 +21,6 @@ export default function Login() {
         {/* Subtle grid mesh background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
         
-        {/* Gallery Logo */}
-        <div className="z-10 flex items-center space-x-2 text-white">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 flex items-center justify-center text-[10px] font-black">
-            E
-          </div>
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">Enuma</span>
-        </div>
 
         {/* Bento Grid */}
         <div className="z-10 grid grid-cols-3 grid-rows-3 gap-4 my-auto max-w-[580px] w-full aspect-square">
@@ -78,7 +71,7 @@ export default function Login() {
             Connect with visual minds
           </h2>
           <p className="text-xs text-zinc-500 tracking-wide font-medium">
-            © 2026 COMMUNITY BOARD FROM META
+            © 2026 ENUMA COMMUNITY BOARD
           </p>
         </div>
 

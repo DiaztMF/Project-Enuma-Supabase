@@ -564,10 +564,10 @@ export default function Feed({ user }) {
           </div>
         </div>
 
-        {/* Footer Meta */}
+        {/* Footer Info */}
         <div className="text-[11px] text-ig-muted leading-loose">
           Tentang · Bantuan · Pers · API · Pekerjaan · Privasi · Ketentuan · Lokasi
-          <p className="mt-4">© 2026 COMMUNITY BOARD FROM META</p>
+          <p className="mt-4">© 2026 ENUMA COMMUNITY BOARD</p>
         </div>
       </div>
 
