@@ -116,6 +116,25 @@ export default function Feed({ user }) {
     }
   }
 
+  const handleDrag = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true)
+    } else if (e.type === "dragleave") {
+      setDragActive(false)
+    }
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setFile(e.dataTransfer.files[0])
+    }
+  }
+
   function closeModal() {
     navigate('/')
   }
@@ -262,12 +281,86 @@ export default function Feed({ user }) {
         </div>
       </div>
 
-      {/* Upload Modal (Scaffolded) */}
+      {/* Upload Modal (Split-panel) */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-ig-card border border-ig-border rounded-xl w-full max-w-lg p-6 relative">
-            <h2 className="text-lg font-bold">Unggah Foto Baru</h2>
-            <button onClick={closeModal} className="absolute top-4 right-4 text-ig-muted hover:text-white"><X /></button>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <button 
+            onClick={closeModal} 
+            className="absolute top-4 right-4 text-white hover:text-zinc-300 cursor-pointer z-50"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          
+          <div className="bg-[#262626] border border-zinc-800 rounded-xl overflow-hidden w-full max-w-[800px] h-[500px] flex flex-col relative z-50 text-white">
+            {/* Modal Header */}
+            <div className="h-11 border-b border-zinc-800 flex justify-between items-center px-4 bg-zinc-900/50">
+              <span className="text-sm font-semibold mx-auto">Buat postingan baru</span>
+              {file && (
+                <button 
+                  onClick={handleUpload} 
+                  disabled={uploading}
+                  className="text-sm font-bold text-ig-blue hover:text-white cursor-pointer disabled:opacity-50 absolute right-4"
+                >
+                  {uploading ? 'Mengunggah...' : 'Bagikan'}
+                </button>
+              )}
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 flex md:flex-row flex-col overflow-hidden bg-black">
+              {/* Left Panel: Image Drop Area / Preview */}
+              <div 
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                className={`flex-1 flex flex-col items-center justify-center p-6 border-r border-zinc-800 relative ${dragActive ? 'bg-zinc-900/40' : ''}`}
+              >
+                {file ? (
+                  <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-contain" />
+                ) : (
+                  <div className="text-center space-y-4">
+                    <UploadCloud className="w-16 h-16 mx-auto text-zinc-500" />
+                    <p className="text-sm font-medium">Tarik foto di sini</p>
+                    <label className="inline-block bg-ig-blue text-white px-4 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-600 cursor-pointer active:scale-95 transition-transform">
+                      Pilih dari komputer
+                      <input 
+                        type="file" 
+                        accept="image/jpeg,image/png"
+                        onChange={(e) => setFile(e.target.files[0])}
+                        className="hidden" 
+                      />
+                    </label>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Panel: Caption Textarea */}
+              <div className="w-full md:w-[300px] bg-zinc-950 p-4 flex flex-col justify-between">
+                <div className="space-y-4">
+                  {user && (
+                    <div className="flex items-center space-x-3">
+                      <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-[10px]">
+                        {user.email[0].toUpperCase()}
+                      </div>
+                      <span className="text-xs font-semibold">@{user.email.split('@')[0]}</span>
+                    </div>
+                  )}
+
+                  <textarea
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
+                    placeholder="Tulis cerita di balik foto ini..."
+                    className="w-full bg-transparent text-sm resize-none focus:outline-none placeholder-zinc-500 h-40"
+                    maxLength="2200"
+                  />
+                </div>
+
+                <div className="text-right text-[10px] text-zinc-600">
+                  {caption.length} / 2200
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

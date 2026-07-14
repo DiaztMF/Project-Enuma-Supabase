@@ -7,19 +7,7 @@ vi.mock('../supabaseClient', () => ({
   supabase: {
     from: vi.fn(() => ({
       select: vi.fn(() => ({
-        order: vi.fn().mockResolvedValue({ 
-          data: [
-            {
-              id: 'post-1',
-              image_url: 'https://example.com/img.jpg',
-              caption: 'Foto Test',
-              created_at: new Date().toISOString(),
-              profiles: { username: 'testuser' },
-              likes: []
-            }
-          ], 
-          error: null 
-        })
+        order: vi.fn().mockResolvedValue({ data: [], error: null })
       }))
     }))
   }
@@ -34,5 +22,17 @@ describe('Feed Page', () => {
     )
     expect(await screen.findByText(/Saran Untuk Anda/i)).toBeInTheDocument()
     expect(screen.getByText(/natasyacptr/i)).toBeInTheDocument()
+  })
+})
+
+describe('Upload Modal Form', () => {
+  test('renders drag and drop file field and caption textarea', () => {
+    render(
+      <MemoryRouter initialEntries={['/?create=true']}>
+        <Feed user={{ id: '123', email: 'test@example.com' }} />
+      </MemoryRouter>
+    )
+    expect(screen.getByText(/Tarik foto di sini/i)).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/Tulis cerita di balik foto ini/i)).toBeInTheDocument()
   })
 })
