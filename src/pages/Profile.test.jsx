@@ -39,6 +39,6 @@ describe('Profile Page', () => {
         </Routes>
       </MemoryRouter>
     )
-    expect(await screen.findByText(/kiriman/i)).toBeInTheDocument()
+    expect(await screen.findByText(/suka diterima/i)).toBeInTheDocument()
   })
 })
