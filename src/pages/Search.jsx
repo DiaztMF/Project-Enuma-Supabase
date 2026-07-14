@@ -35,7 +35,7 @@ export default function Search() {
   }
 
   return (
-    <div className="w-full max-w-[600px] space-y-6 text-white">
+    <div className="w-full max-w-[600px] space-y-6 text-ig-text">
       <h2 className="text-xl font-bold font-serif text-left">Cari Postingan</h2>
       <form onSubmit={handleSearch} className="flex space-x-2">
         <div className="relative flex-1">
@@ -44,7 +44,7 @@ export default function Search() {
             placeholder="Cari postingan..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-[#1c1c1e] border border-ig-border rounded-lg py-2 px-10 text-sm focus:outline-none focus:border-zinc-700 placeholder-zinc-500"
+            className="w-full bg-zinc-100 border border-ig-border rounded-lg py-2 px-10 text-sm focus:outline-none focus:border-zinc-700 placeholder-zinc-500"
           />
           <SearchIcon className="w-4 h-4 text-zinc-500 absolute left-3 top-3.5" />
         </div>

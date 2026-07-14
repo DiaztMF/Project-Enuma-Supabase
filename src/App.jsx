@@ -39,7 +39,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-ig-black text-ig-text flex">
       {/* Left Fixed Sidebar */}
-      <aside className="w-16 md:w-60 h-screen border-r border-ig-border bg-ig-black fixed top-0 left-0 flex flex-col justify-between p-3 md:p-6 z-30">
+      <aside className="w-16 md:w-60 h-screen border-r border-ig-border bg-white fixed top-0 left-0 flex flex-col justify-between p-3 md:p-6 z-30">
         <div className="space-y-8">
           {/* Logo */}
           <Link to="/" className="block py-4">
@@ -53,45 +53,45 @@ export default function App() {
 
           {/* Nav Links */}
           <nav className="space-y-2">
-            <Link to="/" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
+            <Link to="/" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-100 transition-colors active:scale-[0.98]">
               <Home className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Beranda</span>
             </Link>
             
-            <Link to="/search" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
+            <Link to="/search" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-100 transition-colors active:scale-[0.98]">
               <SearchIcon className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Cari</span>
             </Link>
 
-            <Link to="/explore" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
+            <Link to="/explore" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-100 transition-colors active:scale-[0.98]">
               <Compass className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Jelajahi</span>
             </Link>
 
-            <Link to="/messages" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
+            <Link to="/messages" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-100 transition-colors active:scale-[0.98]">
               <MessageCircle className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Pesan</span>
             </Link>
 
-            <Link to="/notifications" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
+            <Link to="/notifications" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-100 transition-colors active:scale-[0.98]">
               <Heart className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Notifikasi</span>
             </Link>
 
             {user ? (
-              <Link to="/?create=true" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
+              <Link to="/?create=true" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-100 transition-colors active:scale-[0.98]">
                 <PlusSquare className="w-6 h-6 text-ig-blue" />
                 <span className="text-sm font-bold text-ig-blue md:inline hidden">Buat</span>
               </Link>
             ) : (
-              <Link to="/login" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
+              <Link to="/login" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-100 transition-colors active:scale-[0.98]">
                 <PlusSquare className="w-6 h-6 text-zinc-500" />
                 <span className="text-sm font-medium text-zinc-500 md:inline hidden">Buat</span>
               </Link>
             )}
 
             {user && (
-              <Link to={`/profile/${username}`} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
+              <Link to={`/profile/${username}`} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-100 transition-colors active:scale-[0.98]">
                 <User className="w-6 h-6" />
                 <span className="text-sm font-medium md:inline hidden truncate">@{username}</span>
               </Link>
@@ -104,13 +104,13 @@ export default function App() {
           {user ? (
             <button 
               onClick={handleLogout} 
-              className="w-full flex items-center space-x-4 p-3 rounded-lg hover:bg-red-950/30 text-red-500 transition-colors cursor-pointer text-left active:scale-[0.98]"
+              className="w-full flex items-center space-x-4 p-3 rounded-lg hover:bg-red-50 text-red-500 transition-colors cursor-pointer text-left active:scale-[0.98]"
             >
               <LogOut className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Keluar</span>
             </button>
           ) : (
-            <Link to="/login" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-900 transition-colors active:scale-[0.98]">
+            <Link to="/login" className="flex items-center space-x-4 p-3 rounded-lg hover:bg-zinc-100 transition-colors active:scale-[0.98]">
               <LogOut className="w-6 h-6" />
               <span className="text-sm font-medium md:inline hidden">Masuk</span>
             </Link>

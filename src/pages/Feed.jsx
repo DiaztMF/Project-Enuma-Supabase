@@ -149,7 +149,7 @@ export default function Feed({ user }) {
           {MOCK_STORIES.map(story => (
             <div key={story.id} className="flex flex-col items-center space-y-1.5 flex-shrink-0 cursor-pointer">
               <div className="w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-600">
-                <img src={story.avatar} alt={story.username} className="w-full h-full rounded-full object-cover border-2 border-black" />
+                <img src={story.avatar} alt={story.username} className="w-full h-full rounded-full object-cover border-2 border-white" />
               </div>
               <span className="text-[11px] text-ig-muted truncate w-14 text-center">
                 {story.username}
@@ -191,7 +191,7 @@ export default function Feed({ user }) {
                   </div>
 
                   {/* Post Image */}
-                  <div className="w-full bg-black aspect-square flex items-center justify-center overflow-hidden">
+                  <div className="w-full bg-zinc-50 aspect-square flex items-center justify-center overflow-hidden">
                     <img src={post.image_url} alt={post.caption || 'Foto'} className="w-full h-full object-cover" />
                   </div>
 
@@ -234,7 +234,7 @@ export default function Feed({ user }) {
       </div>
 
       {/* Right Suggestions Sidebar */}
-      <div className="w-[320px] lg:block hidden space-y-6 pt-4 text-white">
+      <div className="w-[320px] lg:block hidden space-y-6 pt-4 text-ig-text">
         {/* Current user info */}
         {user && (
           <div className="flex justify-between items-center">
@@ -247,7 +247,7 @@ export default function Feed({ user }) {
                 <p className="text-xs text-ig-muted">Pengguna Aktif</p>
               </div>
             </div>
-            <button className="text-xs font-bold text-ig-blue hover:text-white cursor-pointer">Alihkan</button>
+            <button className="text-xs font-bold text-ig-blue hover:text-ig-text cursor-pointer">Alihkan</button>
           </div>
         )}
 
@@ -268,7 +268,7 @@ export default function Feed({ user }) {
                     <p className="text-[10px] text-ig-muted truncate w-40">{sug.desc}</p>
                   </div>
                 </div>
-                <button className="text-xs font-bold text-ig-blue hover:text-white cursor-pointer">Ikuti</button>
+                <button className="text-xs font-bold text-ig-blue hover:text-ig-text cursor-pointer">Ikuti</button>
               </div>
             ))}
           </div>
@@ -291,15 +291,15 @@ export default function Feed({ user }) {
             <X className="w-8 h-8" />
           </button>
           
-          <div className="bg-[#262626] border border-zinc-800 rounded-xl overflow-hidden w-full max-w-[800px] h-[500px] flex flex-col relative z-50 text-white">
+          <div className="bg-white border border-ig-border rounded-xl overflow-hidden w-full max-w-[800px] h-[500px] flex flex-col relative z-50 text-ig-text">
             {/* Modal Header */}
-            <div className="h-11 border-b border-zinc-800 flex justify-between items-center px-4 bg-zinc-900/50">
+            <div className="h-11 border-b border-ig-border flex justify-between items-center px-4 bg-zinc-50">
               <span className="text-sm font-semibold mx-auto">Buat postingan baru</span>
               {file && (
                 <button 
                   onClick={handleUpload} 
                   disabled={uploading}
-                  className="text-sm font-bold text-ig-blue hover:text-white cursor-pointer disabled:opacity-50 absolute right-4"
+                  className="text-sm font-bold text-ig-blue hover:text-ig-text cursor-pointer disabled:opacity-50 absolute right-4"
                 >
                   {uploading ? 'Mengunggah...' : 'Bagikan'}
                 </button>
@@ -307,14 +307,14 @@ export default function Feed({ user }) {
             </div>
 
             {/* Modal Body */}
-            <div className="flex-1 flex md:flex-row flex-col overflow-hidden bg-black">
+            <div className="flex-1 flex md:flex-row flex-col overflow-hidden bg-zinc-50">
               {/* Left Panel: Image Drop Area / Preview */}
               <div 
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`flex-1 flex flex-col items-center justify-center p-6 border-r border-zinc-800 relative ${dragActive ? 'bg-zinc-900/40' : ''}`}
+                className={`flex-1 flex flex-col items-center justify-center p-6 border-r border-ig-border relative ${dragActive ? 'bg-zinc-100' : ''}`}
               >
                 {file ? (
                   <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-contain" />
@@ -336,11 +336,11 @@ export default function Feed({ user }) {
               </div>
 
               {/* Right Panel: Caption Textarea */}
-              <div className="w-full md:w-[300px] bg-zinc-950 p-4 flex flex-col justify-between">
+              <div className="w-full md:w-[300px] bg-white p-4 flex flex-col justify-between">
                 <div className="space-y-4">
                   {user && (
                     <div className="flex items-center space-x-3">
-                      <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-[10px]">
+                      <div className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-[10px]">
                         {user.email[0].toUpperCase()}
                       </div>
                       <span className="text-xs font-semibold">@{user.email.split('@')[0]}</span>

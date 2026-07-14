@@ -51,7 +51,7 @@ export default function Notifications({ user }) {
   }
 
   return (
-    <div className="w-full max-w-[600px] space-y-6 text-left text-white">
+    <div className="w-full max-w-[600px] space-y-6 text-left text-ig-text">
       <h2 className="text-xl font-bold font-serif">Notifikasi Aktivitas</h2>
       {loading ? (
         <div className="text-center py-10 text-zinc-500">Memuat notifikasi...</div>
@@ -62,10 +62,10 @@ export default function Notifications({ user }) {
           {notifications.map((notif, index) => (
             <div key={index} className="flex justify-between items-center py-4">
               <div className="flex items-center space-x-4">
-                <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-xs">
+                <div className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-xs">
                   {notif.profiles?.username ? notif.profiles.username[0].toUpperCase() : 'U'}
                 </div>
-                <p className="text-sm text-zinc-200">
+                <p className="text-sm text-ig-text">
                   <span className="font-semibold">@{notif.profiles?.username || 'user'}</span> menyukai postingan Anda.
                 </p>
               </div>
