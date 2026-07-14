@@ -13,10 +13,10 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-[100dvh] w-full flex md:flex-row flex-col overflow-hidden bg-zinc-50 font-sans text-zinc-900">
+    <div className="md:h-[100dvh] min-h-[100dvh] p-5 w-full flex md:flex-row flex-col gap-5 overflow-hidden bg-zinc-50 font-sans text-zinc-900">
       
       {/* Left Column: Visual Bento Gallery */}
-      <div className="hidden md:flex md:w-[65%  ] h-[100dvh] bg-zinc-950 p-12 flex-col justify-between overflow-hidden relative border-r border-zinc-900 select-none">
+      <div className="hidden md:flex md:w-[55%] h-full bg-zinc-950 p-12 flex-col justify-between overflow-hidden relative rounded-2xl select-none">
         
         {/* Subtle grid mesh background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
@@ -78,7 +78,7 @@ export default function Login() {
       </div>
 
       {/* Right Column: Premium Authentication Card */}
-      <div className="w-full md:w-[45%] min-h-[100dvh] md:min-h-0 bg-white flex flex-col items-center justify-center p-8 relative">
+      <div className="w-full md:w-[45%] md:h-full min-h-[calc(100dvh-2.5rem)] bg-white flex flex-col items-center justify-center p-8 relative rounded-2xl border border-zinc-200/50 shadow-sm">
         
         {/* Auth form wrap */}
         <div className="w-full max-w-sm flex flex-col items-center text-center px-4">
