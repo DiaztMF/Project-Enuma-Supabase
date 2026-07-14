@@ -16,7 +16,7 @@ export default function Login() {
     <div className="min-h-[100dvh] w-full flex md:flex-row flex-col overflow-hidden bg-zinc-50 font-sans text-zinc-900">
       
       {/* Left Column: Visual Bento Gallery */}
-      <div className="hidden md:flex md:w-[55%] h-[100dvh] bg-zinc-950 p-12 flex-col justify-between overflow-hidden relative border-r border-zinc-900 select-none">
+      <div className="hidden md:flex md:w-[65%  ] h-[100dvh] bg-zinc-950 p-12 flex-col justify-between overflow-hidden relative border-r border-zinc-900 select-none">
         
         {/* Subtle grid mesh background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
@@ -38,8 +38,8 @@ export default function Login() {
           <div className="col-span-1 row-span-1 rounded-2xl overflow-hidden border border-zinc-800/40 shadow-xl relative group">
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors duration-500 z-10" />
             <img 
-              src="https://images.unsplash.com/photo-1493150134366-cacb0bdc03ec?w=400&auto=format&fit=crop&q=80" 
-              alt="Minimalist design" 
+              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&auto=format&fit=crop&q=80" 
+              alt="Modern architecture" 
               className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
           </div>
