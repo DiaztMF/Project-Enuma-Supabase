@@ -585,7 +585,7 @@ export default function Feed({ user }) {
             <X className="w-8 h-8" />
           </button>
           
-          <div className="bg-white border border-ig-border rounded-xl overflow-hidden w-full max-w-[800px] h-[500px] flex flex-col relative z-50 text-ig-text">
+          <div className="bg-white border border-ig-border rounded-xl overflow-hidden w-full max-w-[800px] md:h-[500px] h-[85dvh] flex flex-col relative z-50 text-ig-text">
             {/* Modal Header */}
             <div className="h-11 border-b border-ig-border flex justify-between items-center px-4 bg-zinc-50">
               <span className="text-sm font-semibold mx-auto">Buat postingan baru</span>
@@ -601,7 +601,7 @@ export default function Feed({ user }) {
             </div>
 
             {/* Modal Body */}
-            <div className="flex-1 flex md:flex-row flex-col overflow-hidden bg-zinc-50">
+            <div className="flex-1 flex md:flex-row flex-col overflow-y-auto md:overflow-hidden bg-zinc-50">
               {/* Left Panel: Image Drop Area / Preview */}
               <div 
                 onDragEnter={handleDrag}
