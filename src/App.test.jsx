@@ -13,7 +13,12 @@ vi.mock('./supabaseClient', () => ({
       }),
       getUser: vi.fn().mockResolvedValue({ data: { user: { id: '123' } } }),
       signOut: vi.fn()
-    }
+    },
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        order: vi.fn().mockResolvedValue({ data: [], error: null })
+      }))
+    }))
   }
 }))
 
