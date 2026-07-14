@@ -4,15 +4,7 @@ import { supabase } from '../supabaseClient'
 import { Button } from '../components/ui/button'
 import { Heart, MessageCircle, Send, Bookmark, X, UploadCloud, Loader2 } from 'lucide-react'
 
-// Mock Data for Stories & Suggestions
-const MOCK_STORIES = [
-  { id: 1, username: 'natasyacptr', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop' },
-  { id: 2, username: 'ibra17al.t', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop' },
-  { id: 3, username: 'realst4r_s', avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop' },
-  { id: 4, username: 'linzzkunn', avatar: 'https://images.unsplash.com/photo-1527983359383-4758693f760c?w=100&h=100&fit=crop' },
-  { id: 5, username: '4linns_', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop' }
-]
-
+// Mock Data for Suggestions (kept as mock or can be fallback)
 const MOCK_SUGGESTIONS = [
   { id: 1, username: 'alld', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop', desc: 'Diikuti oleh apinxyz + 1 lainnya' },
   { id: 2, username: 'Aisyah', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop', desc: 'Diikuti oleh npssazh + 9 lainnya' },
@@ -21,6 +13,7 @@ const MOCK_SUGGESTIONS = [
 
 export default function Feed({ user }) {
   const [posts, setPosts] = useState([])
+  const [stories, setStories] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -33,9 +26,37 @@ export default function Feed({ user }) {
   const [file, setFile] = useState(null)
   const [dragActive, setDragActive] = useState(false)
 
+  // Story Viewer State
+  const [activeStoryIndex, setActiveStoryIndex] = useState(null)
+  const [progress, setProgress] = useState(0)
+
   useEffect(() => {
     fetchPosts()
   }, [])
+
+  // Timer Effect for Stories Progress
+  useEffect(() => {
+    if (activeStoryIndex === null) return
+    setProgress(0)
+
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          // Advance to next story or close
+          if (activeStoryIndex < stories.length - 1) {
+            setActiveStoryIndex(activeStoryIndex + 1)
+          } else {
+            setActiveStoryIndex(null)
+          }
+          return 100
+        }
+        return prev + 5 // 5% every 150ms = 100% in 3000ms
+      })
+    }, 150)
+
+    return () => clearInterval(interval)
+  }, [activeStoryIndex, stories.length])
 
   async function fetchPosts() {
     try {
@@ -54,6 +75,26 @@ export default function Feed({ user }) {
 
       if (error) throw error
       setPosts(data || [])
+
+      // Deduplicate posts to generate dynamic stories (1 latest post per user)
+      const uniqueUsers = {}
+      const dynamicStories = []
+      data?.forEach(post => {
+        const username = post.profiles?.username || 'user'
+        if (!uniqueUsers[username]) {
+          uniqueUsers[username] = true
+          dynamicStories.push({
+            id: post.id,
+            username: username,
+            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`,
+            post_image: post.image_url,
+            caption: post.caption,
+            created_at: post.created_at
+          })
+        }
+      })
+      setStories(dynamicStories)
+
     } catch (error) {
       console.error('Error fetching posts:', error.message)
     } finally {
@@ -146,8 +187,12 @@ export default function Feed({ user }) {
         
         {/* Stories Bar */}
         <div className="border border-ig-border bg-ig-card rounded-lg p-4 flex space-x-4 overflow-x-auto scrollbar-none">
-          {MOCK_STORIES.map(story => (
-            <div key={story.id} className="flex flex-col items-center space-y-1.5 flex-shrink-0 cursor-pointer">
+          {stories.map((story, index) => (
+            <div 
+              key={story.id} 
+              onClick={() => setActiveStoryIndex(index)}
+              className="flex flex-col items-center space-y-1.5 flex-shrink-0 cursor-pointer"
+            >
               <div className="w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-600">
                 <img src={story.avatar} alt={story.username} className="w-full h-full rounded-full object-cover border-2 border-white" />
               </div>
@@ -362,6 +407,75 @@ export default function Feed({ user }) {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Story Viewer Overlay */}
+      {activeStoryIndex !== null && stories[activeStoryIndex] && (
+        <div className="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center">
+          {/* Header Progress Bar */}
+          <div className="absolute top-4 left-4 right-4 z-50 space-y-2">
+            <div className="flex space-x-1.5 w-full">
+              {stories.map((_, idx) => (
+                <div key={idx} className="flex-1 h-0.5 bg-zinc-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-white transition-all duration-150 ease-linear"
+                    style={{ 
+                      width: idx === activeStoryIndex ? `${progress}%` : idx < activeStoryIndex ? '100%' : '0%' 
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex justify-between items-center text-white">
+              <div className="flex items-center space-x-3 text-left">
+                <img src={stories[activeStoryIndex].avatar} alt={stories[activeStoryIndex].username} className="w-8 h-8 rounded-full object-cover border border-white" />
+                <span className="text-sm font-semibold">@{stories[activeStoryIndex].username}</span>
+              </div>
+              <button 
+                onClick={() => setActiveStoryIndex(null)}
+                className="text-white hover:text-zinc-300 cursor-pointer"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Left Arrow */}
+          {activeStoryIndex > 0 && (
+            <button 
+              onClick={() => setActiveStoryIndex(activeStoryIndex - 1)}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-zinc-300 cursor-pointer p-2 bg-zinc-900/40 rounded-full z-50"
+            >
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Story Content */}
+          <div className="relative max-w-lg w-full px-4 text-center space-y-4">
+            <div className="text-white text-xs mb-2 uppercase tracking-widest text-zinc-400">Menatap Story</div>
+            <div className="aspect-square bg-zinc-950 rounded-lg overflow-hidden flex items-center justify-center border border-zinc-800">
+              <img src={stories[activeStoryIndex].post_image} alt="Story" className="w-full h-full object-contain" />
+            </div>
+            {stories[activeStoryIndex].caption && (
+              <p className="text-white text-sm bg-black/40 p-3 rounded-lg backdrop-blur-sm mt-2">{stories[activeStoryIndex].caption}</p>
+            )}
+          </div>
+
+          {/* Right Arrow */}
+          {activeStoryIndex < stories.length - 1 && (
+            <button 
+              onClick={() => setActiveStoryIndex(activeStoryIndex + 1)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-zinc-300 cursor-pointer p-2 bg-zinc-900/40 rounded-full z-50"
+            >
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
         </div>
       )}
     </div>
