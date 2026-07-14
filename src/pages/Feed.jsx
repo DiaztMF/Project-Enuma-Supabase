@@ -31,7 +31,7 @@ export default function Feed() {
           image_url,
           caption,
           created_at,
-          profiles (username),
+          profiles!posts_user_id_fkey (username),
           likes (user_id)
         `)
         .order('created_at', { ascending: false })
