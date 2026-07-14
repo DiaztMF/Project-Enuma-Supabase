@@ -5,7 +5,7 @@ Sebuah aplikasi web bergaya mini sosial media (papan komunitas) di mana pengguna
 
 ## 2. Core Features (MVP)
 - **Public Feed**: Halaman utama yang menampilkan daftar semua foto yang diposting oleh komunitas, diurutkan dari yang terbaru.
-- **Authentication**: Registrasi dan Login menggunakan Email & Password.
+- **Authentication**: Registrasi dan Login menggunakan Email & Password dan social provider (google)
 - **Create Post**: Form untuk pengguna yang sudah login agar dapat mengunggah gambar (ke Supabase Storage) beserta teks caption (ke Supabase Database).
 - **Like System**: Pengguna yang sudah login dapat menyukai (like) atau batal menyukai (unlike) postingan.
 - **Deployment**: Deployment otomatis ke Vercel.
@@ -14,9 +14,9 @@ Sebuah aplikasi web bergaya mini sosial media (papan komunitas) di mana pengguna
 
 ### 3.1. Frontend
 - **Framework**: React (Vite)
-- **Styling**: Tailwind CSS v4
+- **Styling**: Shadcn dan Tailwind CSS v4
 - **Icons**: Lucide React
-- **Routing**: `react-router-dom` (opsional, jika kita butuh halaman login terpisah) atau *Single Page Application* dengan *conditional rendering* jika UI cukup sederhana.
+- **Routing**: react-router-dom
 
 ### 3.2. Database Schema (Supabase PostgreSQL)
 - **`profiles`**:
